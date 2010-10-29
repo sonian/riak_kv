@@ -408,6 +408,11 @@ do_list_bucket(ReqID,Bucket,Mod,ModState,Idx,State) ->
 %% Use in-memory key list for bitcask backend
 %% @private
 do_list_keys(Caller,ReqId,Bucket,Idx,Mod,ModState)
+  when Mod =:= riak_kv_walrus_backend ->
+      Keys = Mod:list_bucket(ModState, Bucket),
+      Caller ! {ReqId, {kl, Idx, Keys}},
+      Caller ! {ReqId, Idx, done};
+do_list_keys(Caller,ReqId,Bucket,Idx,Mod,ModState)
   when Mod =:= riak_kv_bitcask_backend ->
     F = fun(BKey, Acc) ->
                 process_keys(Caller, ReqId, Idx, Bucket, BKey, Acc) end,
